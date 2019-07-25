@@ -32,32 +32,32 @@ my_add:
 	nop
 
 
-## my libmincaml.S (for SPIM)
+# ## my libmincaml.S (for SPIM)
 
-#	print_int
-	.text
-	.align 	2
-	.globl	min_caml_print_int
-min_caml_print_int:
-  addiu $sp,$sp,-8 # $sp の値 (7ffffdbc => 7fffdb4)
-	sw $ra,4($sp)    # (7fffdb8) = $ra の値
-	sw $fp,0($sp)    # (7fffdb4) = $fp の値
+# #	print_int
+# 	.text
+# 	.align 	2
+# 	.globl	min_caml_print_int
+# min_caml_print_int:
+#   addiu $sp,$sp,-8 # $sp の値 (7ffffdbc => 7fffdb4)
+# 	sw $ra,4($sp)    # (7fffdb8) = $ra の値
+# 	sw $fp,0($sp)    # (7fffdb4) = $fp の値
 
-  li $v0,1
-	syscall
+#   li $v0,1
+# 	syscall
 
-	lw $fp,0($sp)
-	lw $ra,4($sp)
-  addiu $sp,$sp,8
-	jr $ra
-	nop
+# 	lw $fp,0($sp)
+# 	lw $ra,4($sp)
+#   addiu $sp,$sp,8
+# 	jr $ra
+# 	nop
 
 
-# exit
-	.globl min_caml_exit
-min_caml_exit:
-  li $v0, 10
-  syscall
+# # exit
+# 	.globl min_caml_exit
+# min_caml_exit:
+#   li $v0, 10
+#   syscall
 
 
 
