@@ -8,10 +8,10 @@ int main() {
   return 0;
 }
 
-void print_int(int n) {
+void min_caml_print_int(int n) {
   printf("%d", n);
 }
 
-void print_newline() {
+void min_caml_print_newline() {
   printf("\n");
 }
