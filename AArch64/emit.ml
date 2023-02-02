@@ -207,9 +207,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
       g'_args oc [] ys zs;
       let ss = stacksize () in
 
-      (* 関数の頭に _ をつける *)
-      (*   こんな感じ: min_caml_print_int => _min_caml_print_int *)
-      Printf.fprintf oc "\tbl _%s\n" x;
+      Printf.fprintf oc "\tbl %s\n" x;
 
       (* fpとlrをスタックから復元 *)
       Printf.fprintf oc "\tldp fp, lr, [sp], 16\n"
