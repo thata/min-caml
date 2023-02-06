@@ -203,14 +203,14 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
       Printf.fprintf oc "\tmtlr\t%s\n" (reg reg_tmp)
   | (NonTail(a), CallDir(Id.L(x), ys, zs)) ->
       (* fpとlrをスタックへ退避 *)
-      Printf.fprintf oc "\tstp fp, lr, [sp, -16]!\n";
+      Printf.fprintf oc "\tstp fp, lr, [%s, -16]!\n" (reg reg_sp);
       g'_args oc [] ys zs;
       let ss = stacksize () in
 
       Printf.fprintf oc "\tbl %s\n" x;
 
       (* fpとlrをスタックから復元 *)
-      Printf.fprintf oc "\tldp fp, lr, [sp], 16\n"
+      Printf.fprintf oc "\tldp fp, lr, [%s], 16\n" (reg reg_sp)
 and g'_tail_if oc e1 e2 b bn =
   let b_else = Id.genid (b ^ "_else") in
   Printf.fprintf oc "\t%s %s\n" bn b_else;
@@ -274,8 +274,12 @@ let f oc (Prog(data, fundefs, e)) =
   List.iter (fun fundef -> h oc fundef) fundefs;
   Printf.fprintf oc "_min_caml_start: # main entry point\n";
 
+  (* sp と hp を設定 *)
+  Printf.fprintf oc "\tadd %s, %s, 0\n" (reg reg_sp) (reg "%x0");
+  Printf.fprintf oc "\tadd %s, %s, 0\n" (reg reg_hp) (reg "%x1");
+
   (* fpとlrをスタックへ退避 *)
-  Printf.fprintf oc "\tstp fp, lr, [sp, -16]!\n";
+  Printf.fprintf oc "\tstp fp, lr, [%s, -16]!\n" (reg reg_sp);
 
   Printf.fprintf oc "#\tmain program starts\n";
   stackset := S.empty;
@@ -284,7 +288,7 @@ let f oc (Prog(data, fundefs, e)) =
   Printf.fprintf oc "#\tmain program ends\n";
 
   (* fpとlrをスタックから復元 *)
-  Printf.fprintf oc "\tldp fp, lr, [sp], 16\n";
+  Printf.fprintf oc "\tldp fp, lr, [%s], 16\n" (reg reg_sp);
 
   (* 呼び出し元へ戻る *)
   Printf.fprintf oc "\tret\n"

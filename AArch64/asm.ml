@@ -56,7 +56,7 @@ let reg_cl = regs.(Array.length regs - 1) (* closure address (caml2html: sparcas
 let reg_sw = regs.(Array.length regs - 2) (* temporary for swap *)
 let reg_fsw = fregs.(Array.length fregs - 1) (* temporary for swap *)
 (* AArch64 のスタックポインタは `sp` *)
-let reg_sp = "%28" (* stack pointer *)
+let reg_sp = "%x28" (* stack pointer *)
 (* PowerPCが4番レジスタを使ってたので、ひとまずそのままで様子を見る *)
 let reg_hp = "%x27" (* heap pointer (caml2html: sparcasm_reghp) *)
 (* 特に意図はなく x17 にしてる *)
