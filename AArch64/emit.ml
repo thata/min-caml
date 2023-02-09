@@ -21,8 +21,10 @@ let locate x =
     | y :: zs when x = y -> 0 :: List.map succ (loc zs)
     | y :: zs -> List.map succ (loc zs) in
   loc !stackmap
-let offset x = 4 * List.hd (locate x)
-let stacksize () = align ((List.length !stackmap + 1) * 4)
+
+(* NOTE: 64ビットなので 4 バイトから 8 バイトに修正 *)
+let offset x = 8 * List.hd (locate x)
+let stacksize () = align ((List.length !stackmap + 1) * 8)
 
 let reg r =
   if is_reg r
@@ -78,9 +80,9 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
   | NonTail(x), Mr(y) -> Printf.fprintf oc "\tmr\t%s, %s\n" (reg x) (reg y)
   | NonTail(x), Neg(y) -> Printf.fprintf oc "\tneg\t%s, %s\n" (reg x) (reg y)
   | NonTail(x), Add(y, V(z)) -> Printf.fprintf oc "\tadd\t%s, %s, %s\n" (reg x) (reg y) (reg z)
-  | NonTail(x), Add(y, C(z)) -> Printf.fprintf oc "\taddi\t%s, %s, %d\n" (reg x) (reg y) z
+  | NonTail(x), Add(y, C(z)) -> Printf.fprintf oc "\tadd\t%s, %s, %d\n" (reg x) (reg y) z
   | NonTail(x), Sub(y, V(z)) -> Printf.fprintf oc "\tsub\t%s, %s, %s\n" (reg x) (reg y) (reg z)
-  | NonTail(x), Sub(y, C(z)) -> Printf.fprintf oc "\tsubi\t%s, %s, %d\n" (reg x) (reg y) z
+  | NonTail(x), Sub(y, C(z)) -> Printf.fprintf oc "\tsub\t%s, %s, %d\n" (reg x) (reg y) z
   | NonTail(x), Slw(y, V(z)) -> Printf.fprintf oc "\tslw\t%s, %s, %s\n" (reg x) (reg y) (reg z)
   | NonTail(x), Slw(y, C(z)) -> Printf.fprintf oc "\tslwi\t%s, %s, %d\n" (reg x) (reg y) z
   | NonTail(x), Lwz(y, V(z)) -> Printf.fprintf oc "\tlwzx\t%s, %s, %s\n" (reg x) (reg y) (reg z)
@@ -102,14 +104,14 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
   (* 退避の仮想命令の実装 (caml2html: emit_save) *)
   | NonTail(_), Save(x, y) when List.mem x allregs && not (S.mem y !stackset) ->
       save y;
-      Printf.fprintf oc "\tstw\t%s, %d(%s)\n" (reg x) (offset y) (reg reg_sp)
+      Printf.fprintf oc "\t@@stw\t%s, %d(%s)\n" (reg x) (offset y) (reg reg_sp)
   | NonTail(_), Save(x, y) when List.mem x allfregs && not (S.mem y !stackset) ->
       savef y;
       Printf.fprintf oc "\tstfd\t%s, %d(%s)\n" (reg x) (offset y) (reg reg_sp)
   | NonTail(_), Save(x, y) -> assert (S.mem y !stackset); ()
   (* 復帰の仮想命令の実装 (caml2html: emit_restore) *)
   | NonTail(x), Restore(y) when List.mem x allregs ->
-      Printf.fprintf oc "\tlwz\t%s, %d(%s)\n" (reg x) (offset y) (reg reg_sp)
+      Printf.fprintf oc "\t@@lwz\t%s, %d(%s)\n" (reg x) (offset y) (reg reg_sp)
   | NonTail(x), Restore(y) ->
       assert (List.mem x allfregs);
       Printf.fprintf oc "\tlfd\t%s, %d(%s)\n" (reg x) (offset y) (reg reg_sp)
@@ -194,7 +196,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
       Printf.fprintf oc "\tlwz\t%s, 0(%s)\n" (reg reg_tmp) (reg reg_cl);
       Printf.fprintf oc "\tmtctr\t%s\n" (reg reg_tmp);
       Printf.fprintf oc "\tbctrl\n";
-      Printf.fprintf oc "\tsubi\t%s, %s, %d\n" (reg reg_sp) (reg reg_sp) ss;
+      Printf.fprintf oc "\tsubi\t%s, %s, gs%d\n" (reg reg_sp) (reg reg_sp) ss;
       Printf.fprintf oc "\tlwz\t%s, %d(%s)\n" (reg reg_tmp) (ss - 4) (reg reg_sp);
       if List.mem a allregs && a <> regs.(0) then
         Printf.fprintf oc "\tmr\t%s, %s\n" (reg a) (reg regs.(0))
@@ -202,15 +204,21 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
         Printf.fprintf oc "\tfmr\t%s, %s\n" (reg a) (reg fregs.(0));
       Printf.fprintf oc "\tmtlr\t%s\n" (reg reg_tmp)
   | (NonTail(a), CallDir(Id.L(x), ys, zs)) ->
-      (* fpとlrをスタックへ退避 *)
-      Printf.fprintf oc "\tstp fp, lr, [%s, -16]!\n" (reg reg_sp);
+      Printf.fprintf oc "\tmov %s, lr\n" (reg reg_tmp);
       g'_args oc [] ys zs;
       let ss = stacksize () in
-
+      (* lrをスタックへ退避 *)
+      Printf.fprintf oc "\tstr %s, [%s, %d]\n" (reg reg_tmp) (reg reg_sp) (ss - 8);
+      Printf.fprintf oc "\tadd %s, %s, %d\n" (reg reg_sp) (reg reg_sp) ss;
       Printf.fprintf oc "\tbl %s\n" x;
-
-      (* fpとlrをスタックから復元 *)
-      Printf.fprintf oc "\tldp fp, lr, [%s], 16\n" (reg reg_sp)
+      Printf.fprintf oc "\tsub %s, %s, %d\n" (reg reg_sp) (reg reg_sp) ss;
+      Printf.fprintf oc "\tldr %s, [%s, %d]\n" (reg reg_tmp) (reg reg_sp) (ss - 8);
+      if List.mem a allregs && a <> regs.(0) then
+        Printf.fprintf oc "\t@@@@mov\t%s, %s\n" (reg a) (reg regs.(0))
+      else if List.mem a allfregs && a <> fregs.(0) then
+        Printf.fprintf oc "\t@@@@fmr\t%s, %s\n" (reg a) (reg fregs.(0));
+      (* lrをスタックから復元 *)
+      Printf.fprintf oc "\tmov lr, %s\n" (reg reg_tmp)
 and g'_tail_if oc e1 e2 b bn =
   let b_else = Id.genid (b ^ "_else") in
   Printf.fprintf oc "\t%s %s\n" bn b_else;
@@ -240,7 +248,7 @@ and g'_args oc x_reg_cl ys zs =
       (0, x_reg_cl)
       ys in
   List.iter
-    (fun (y, r) -> Printf.fprintf oc "\tmr\t%s, %s\n" (reg r) (reg y))
+    (fun (y, r) -> Printf.fprintf oc "\tmov %s, %s\n" (reg r) (reg y))
     (shuffle reg_sw yrs);
   let (d, zfrs) =
     List.fold_left
@@ -279,7 +287,9 @@ let f oc (Prog(data, fundefs, e)) =
   Printf.fprintf oc "\tadd %s, %s, 0\n" (reg reg_hp) (reg "%x1");
 
   (* fpとlrをスタックへ退避 *)
-  Printf.fprintf oc "\tstp fp, lr, [%s, -16]!\n" (reg reg_sp);
+  Printf.fprintf oc "\tstr fp, [%s, 0]\n" (reg reg_sp);
+  Printf.fprintf oc "\tstr lr, [%s, 8]\n" (reg reg_sp);
+  Printf.fprintf oc "\tadd %s, %s, 16\n" (reg reg_sp) (reg reg_sp);
 
   Printf.fprintf oc "#\tmain program starts\n";
   stackset := S.empty;
@@ -288,7 +298,9 @@ let f oc (Prog(data, fundefs, e)) =
   Printf.fprintf oc "#\tmain program ends\n";
 
   (* fpとlrをスタックから復元 *)
-  Printf.fprintf oc "\tldp fp, lr, [%s], 16\n" (reg reg_sp);
+  Printf.fprintf oc "\tsub %s, %s, 16\n" (reg reg_sp) (reg reg_sp);
+  Printf.fprintf oc "\tldr fp, [%s, 0]\n" (reg reg_sp);
+  Printf.fprintf oc "\tstr lr, [%s, 8]\n" (reg reg_sp);
 
   (* 呼び出し元へ戻る *)
   Printf.fprintf oc "\tret\n"

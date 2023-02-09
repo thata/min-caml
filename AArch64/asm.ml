@@ -92,4 +92,5 @@ let rec concat e1 xt e2 =
   | Ans(exp) -> Let(xt, exp, e2)
   | Let(yt, exp, e1') -> Let(yt, exp, concat e1' xt e2)
 
+(* NOTE: 修正が必要になるかもしれない *)
 let align i = (if i mod 8 = 0 then i else i + 4)
