@@ -204,17 +204,17 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
         Printf.fprintf oc "\tfmr\t%s, %s\n" (reg a) (reg fregs.(0));
       Printf.fprintf oc "\tmtlr\t%s\n" (reg reg_tmp)
   | (NonTail(a), CallDir(Id.L(x), ys, zs)) ->
-      Printf.fprintf oc "\tmov %s, lr\n" (reg reg_tmp);
       g'_args oc [] ys zs;
       let ss = stacksize () in
       (* lrをスタックへ退避 *)
+      Printf.fprintf oc "\tmov %s, lr\n" (reg reg_tmp);
       Printf.fprintf oc "\tstr %s, [%s, %d]\n" (reg reg_tmp) (reg reg_sp) (ss - 8);
       Printf.fprintf oc "\tadd %s, %s, %d\n" (reg reg_sp) (reg reg_sp) ss;
       Printf.fprintf oc "\tbl %s\n" x;
       Printf.fprintf oc "\tsub %s, %s, %d\n" (reg reg_sp) (reg reg_sp) ss;
       Printf.fprintf oc "\tldr %s, [%s, %d]\n" (reg reg_tmp) (reg reg_sp) (ss - 8);
       if List.mem a allregs && a <> regs.(0) then
-        Printf.fprintf oc "\t@@@@mov\t%s, %s\n" (reg a) (reg regs.(0))
+        Printf.fprintf oc "\tmov %s, %s\n" (reg a) (reg regs.(0))
       else if List.mem a allfregs && a <> fregs.(0) then
         Printf.fprintf oc "\t@@@@fmr\t%s, %s\n" (reg a) (reg fregs.(0));
       (* lrをスタックから復元 *)
