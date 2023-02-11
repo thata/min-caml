@@ -33,10 +33,7 @@ let reg r =
 
 let load_label r label =
   let r' = reg r in
-  Printf.sprintf "\tldr %s, %s\n" r' label
-  (* Printf.sprintf
-    "\t@@@lis\t%s, ha16(%s)\n\taddi\t%s, %s, lo16(%s)\n"
-    r' label r' r' label *)
+  Printf.sprintf "\tadr %s, %s\n" r' label
 
 (* 関数呼び出しのために引数を並べ替える(register shuffling) (caml2html: emit_shuffle) *)
 let rec shuffle sw xys =
