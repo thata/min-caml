@@ -63,14 +63,19 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
   | NonTail(x), Li(i) when -32768 <= i && i < 32768 -> Printf.fprintf oc "\tmov %s, %d\n" (reg x) i
   (* TODO: こちらは後で実装する *)
   | NonTail(x), Li(i) ->
-      let n = i lsr 16 in
-      let m = i lxor (n lsl 16) in
-      let r = reg x in
-      Printf.fprintf oc "\tlis\t%s, %d\n" r n;
-      Printf.fprintf oc "\tori\t%s, %s, %d\n" r r m
+      (* 16ビットずつに区切って定数を読み込む *)
+      let a = i land 0xffff in
+      let b = (i lsr 16) land 0xffff in
+      let c = (i lsr 32) land 0xffff in
+      let d = (i lsr 48) land 0xffff in
+      Printf.fprintf oc "\tmov %s, %d\n" (reg x) a;
+      Printf.fprintf oc "\tmovk %s, %d, lsl 16\n" (reg x) b;
+      Printf.fprintf oc "\tmovk %s, %d, lsl 32\n" (reg x) c;
+      Printf.fprintf oc "\tmovk %s, %d, lsl 48\n" (reg x) d
   | NonTail(x), FLi(Id.L(l)) ->
-      let s = load_label (reg reg_tmp) l in
-      Printf.fprintf oc "%s\tlfd\t%s, 0(%s)\n" s (reg x) (reg reg_tmp)
+      (* ラベル l に格納された浮動小数点数をレジスタへロードする *)
+      Printf.fprintf oc "\tadrp %s, %s@PAGE\n" (reg reg_tmp) l;
+      Printf.fprintf oc "\tldr %s, [%s, %s@PAGEOFF]\n" (reg x) (reg reg_tmp) l
   | NonTail(x), SetL(Id.L(y)) ->
       let s = load_label x y in
       Printf.fprintf oc "%s" s
@@ -105,14 +110,16 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
       Printf.fprintf oc "\tstr %s, [%s, %d]\n" (reg x) (reg reg_sp) (offset y)
   | NonTail(_), Save(x, y) when List.mem x allfregs && not (S.mem y !stackset) ->
       savef y;
-      Printf.fprintf oc "\tstfd\t%s, %d(%s)\n" (reg x) (offset y) (reg reg_sp)
+      Printf.fprintf oc "\tstr %s, [%s, %d]\n" (reg x) (reg reg_sp) (offset y)
+      (* Printf.fprintf oc "\tstfd\t%s, %d(%s)\n" (reg x) (offset y) (reg reg_sp) *)
   | NonTail(_), Save(x, y) -> assert (S.mem y !stackset); ()
   (* 復帰の仮想命令の実装 (caml2html: emit_restore) *)
   | NonTail(x), Restore(y) when List.mem x allregs ->
       Printf.fprintf oc "\tldr %s, [%s, %d]\n" (reg x) (reg reg_sp) (offset y)
   | NonTail(x), Restore(y) ->
       assert (List.mem x allfregs);
-      Printf.fprintf oc "\tlfd\t%s, %d(%s)\n" (reg x) (offset y) (reg reg_sp)
+      Printf.fprintf oc "\tldr %s, [%s, %d]\n" (reg x) (reg reg_sp) (offset y)
+      (* Printf.fprintf oc "\tlfd\t%s, %d(%s)\n" (reg x) (offset y) (reg reg_sp) *)
   (* 末尾だったら計算結果を第一レジスタにセットしてリターン (caml2html: emit_tailret) *)
   | Tail, (Nop | Stw _ | Stfd _ | Comment _ | Save _ as exp) ->
       g' oc (NonTail(Id.gentmp Type.Unit), exp);
@@ -148,10 +155,10 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
       Printf.fprintf oc "\tcmp %s, %d\n" (reg x) y;
       g'_tail_if oc e1 e2 "bge" "blt"
   | Tail, IfFEq(x, y, e1, e2) ->
-      Printf.fprintf oc "\tfcmpu\tcr7, %s, %s\n" (reg x) (reg y);
+      Printf.fprintf oc "\tfcmp %s, %s\n" (reg x) (reg y);
       g'_tail_if oc e1 e2 "beq" "bne"
   | Tail, IfFLE(x, y, e1, e2) ->
-      Printf.fprintf oc "\tfcmpu\tcr7, %s, %s\n" (reg x) (reg y);
+      Printf.fprintf oc "\tfcmp %s, %s\n" (reg x) (reg y);
       g'_tail_if oc e1 e2 "ble" "bgt"
   | NonTail(z), IfEq(x, V(y), e1, e2) ->
       Printf.fprintf oc "\tcmpw\tcr7, %s, %s\n" (reg x) (reg y);

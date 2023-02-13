@@ -12,28 +12,42 @@
 # 	.long	-2147483648
 
 #	create_array
-	.text
-	.align	2
-	.globl _min_caml_create_array
+    .text
+    .align	2
+    .globl _min_caml_create_array
 _min_caml_create_array:
-	mov x0, x27
-	str x1, [x27, 0]
-	add x27, x27, 8
-	ret
-# 	mov x26, x0
-# 	mr	r2, r4
-# create_array_loop:
-# 	cmpwi	cr7, r6, 0
-# 	bne	cr7, create_array_cont
-# 	b	create_array_exit
-# create_array_exit:
-# 	blr
-# create_array_cont:
-# 	stw	r5, 0(r4)
-# 	subi  	r6, r6, 1
-# 	addi	r4, r4, 4
-# 	b	create_array_loop
+    mov x0, x27
+    str x1, [x27, 0]
+    add x27, x27, 8
+    ret
 
+# 	int_of_float, truncate
+    .text
+    .align	2
+    .globl _min_caml_int_of_float
+_min_caml_int_of_float:
+    .globl _min_caml_truncate
+_min_caml_truncate:
+    fcvtzs w0, d0
+    ret
+
+# float_of_int
+	.globl _min_caml_float_of_int
+_min_caml_float_of_int:
+    scvtf d0, w0
+    ret
+
+# abs_float
+    .globl _min_caml_abs_float
+_min_caml_abs_float:
+    fabs d0, d0
+    ret
+
+# sqrt
+    .globl _min_caml_sqrt
+_min_caml_sqrt:
+    fsqrt d0, d0
+    ret
 
 # 	.text
 # 	.align	2
@@ -138,7 +152,7 @@ _min_caml_create_array:
 # 	lwz	r4, 16(r1)
 # 	mtlr 	r0
 # 	lmw 	r30, -8(r1)
-# 	blr	
+# 	blr
 # #	prerr_int
 # 	.text
 # 	.align 	2
@@ -177,7 +191,7 @@ _min_caml_create_array:
 # 	.long	0
 # 	.section __TEXT, __picsymbolstub1, symbol_stubs, pure_instructions, 32
 # 	.align 	5
-# fprintf:	
+# fprintf:
 # 	.indirect_symbol _fprintf$LDBLStub
 # 	mflr 	r0
 # 	bcl 	20, 31, L3spb
@@ -238,7 +252,7 @@ _min_caml_create_array:
 # fputc_lazy:
 # 	.indirect_symbol _fputc
 # 	.long	dyld_stub_binding_helper
-# 	.subsections_via_symbols	
+# 	.subsections_via_symbols
 # #	prerr_float
 # 	.text
 # 	.align 	2
@@ -279,7 +293,7 @@ _min_caml_create_array:
 # 	lwz	r4, 16(r1)
 # 	mtlr 	r0
 # 	lmw 	r29, -12(r1)
-# 	blr	
+# 	blr
 # #	read_int
 # 	.text
 # 	.align 	2
@@ -309,7 +323,7 @@ _min_caml_create_array:
 # 	blr
 # 	.section __TEXT, __picsymbolstub1, symbol_stubs, pure_instructions, 32
 # 	.align 	5
-# scanf:	
+# scanf:
 # 	.indirect_symbol _scanf$LDBLStub
 # 	mflr 	r0
 # 	bcl 	20, 31, L6spb
@@ -321,7 +335,7 @@ _min_caml_create_array:
 # 	mtctr 	r12
 # 	bctr
 # 	.lazy_symbol_pointer
-# scanf_lazy:	
+# scanf_lazy:
 # 	.indirect_symbol _scanf$LDBLStub
 # 	.long	dyld_stub_binding_helper
 # 	.subsections_via_symbols
@@ -329,7 +343,7 @@ _min_caml_create_array:
 # 	.text
 # 	.align	2
 # 	.globl	min_caml_read_float
-# min_caml_read_float:	
+# min_caml_read_float:
 # 	mflr 	r0
 # 	stmw 	r30, -8(r1)
 # 	stw 	r0, 8(r1)
@@ -356,7 +370,7 @@ _min_caml_create_array:
 # 	.text
 # 	.align	2
 # 	.globl	min_caml_create_array
-# min_caml_create_array:	
+# min_caml_create_array:
 # 	mr	r6, r2
 # 	mr	r2, r4
 # create_array_loop:
@@ -454,7 +468,7 @@ _min_caml_create_array:
 # 	lwz	r4, 16(r1)
 # 	mtlr 	r0
 # 	lmw 	r30,  -8(r1)
-# 	blr	
+# 	blr
 # 	.section __TEXT, __picsymbolstub1, symbol_stubs, pure_instructions, 32
 # 	.align 	5
 # floor:
@@ -473,53 +487,6 @@ _min_caml_create_array:
 # 	.indirect_symbol _floor
 # 	.long	dyld_stub_binding_helper
 # 	.subsections_via_symbols
-# # 	int_of_float, truncate
-# 	.text
-# 	.align	2
-# 	.globl	min_caml_int_of_float
-# min_caml_int_of_float:
-# 	.globl	min_caml_truncate
-# min_caml_truncate:
-# 	stmw 	r30, -8(r1)
-# 	stwu 	r1, -64(r1)
-# 	mr 	r30, r1
-# 	stfd 	f0, 24(r30)
-# 	lfd 	f1, 24(r30)
-# 	fctiwz 	f1, f1
-# 	stfd 	f1, 32(r30)
-# 	lwz 	r31, 36(r30)
-# 	mr 	r2, r31
-# 	lwz 	r1, 0(r1)
-# 	lmw 	r30, -8(r1)
-# 	blr
-# #	float_of_int
-# 	.globl	min_caml_float_of_int
-# min_caml_float_of_int:
-# 	stmw 	r30, -8(r1)
-# 	stw	r3, 8(r1)
-# 	stw	r4, 12(r1)
-# 	stwu 	r1, -48(r1)
-# 	mr 	r30, r1
-# 	mflr 	r0
-# 	bcl 	20, 31, Lapb
-# Lapb:
-# 	mflr 	r10
-# 	mtlr 	r0
-# 	stw 	r2, 72(r30)
-# 	lwz 	r0, 72(r30)
-# 	lis 	r2, 0x4330
-# 	addis 	r9, r10, ha16(LC2 - Lapb)
-# 	lfd 	f13, lo16(LC2 - Lapb)(r9)
-# 	xoris 	r0, r0, 0x8000
-# 	stw 	r0, 28(r30)
-# 	stw 	r2, 24(r30)
-# 	lfd 	f0, 24(r30)
-# 	fsub 	f0, f0, f13
-# 	lwz 	r1, 0(r1)
-# 	lwz	r3, 8(r1)
-# 	lwz	r4, 12(r1)
-# 	lmw 	r30, -8(r1)
-# 	blr
 # #	cos
 # 	.text
 # 	.align 	2
@@ -576,7 +543,7 @@ _min_caml_create_array:
 # 	stwu 	r1, -96(r1)
 # 	mr 	r30, r1
 # 	bcl 	20, 31, Lcpb
-# Lcpb:	
+# Lcpb:
 # 	mflr 	r31
 # 	fmr	f1, f0
 # 	bl 	sin
@@ -590,11 +557,11 @@ _min_caml_create_array:
 # 	blr
 # 	.section __TEXT, __picsymbolstub1, symbol_stubs, pure_instructions, 32
 # 	.align 	5
-# sin:	
+# sin:
 # 	.indirect_symbol _sin
 # 	mflr 	r0
 # 	bcl 	20, 31, Lcspb
-# Lcspb:	
+# Lcspb:
 # 	mflr 	r11
 # 	addis 	r11, r11, ha16(sin_lazy - Lcspb)
 # 	mtlr 	r0
@@ -602,7 +569,7 @@ _min_caml_create_array:
 # 	mtctr 	r12
 # 	bctr
 # 	.lazy_symbol_pointer
-# sin_lazy:	
+# sin_lazy:
 # 	.indirect_symbol _sin
 # 	.long	dyld_stub_binding_helper
 # 	.subsections_via_symbols

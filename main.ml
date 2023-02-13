@@ -9,7 +9,8 @@ let rec iter n e = (* 最適化処理をくりかえす (caml2html: main_iter) *
 
 let lexbuf outchan l = (* バッファをコンパイルしてチャンネルへ出力する (caml2html: main_lexbuf) *)
   Id.counter := 0;
-  Typing.extenv := M.empty;
+  Typing.extenv := (M.add "sqrt" (Type.Fun ([Type.Float], Type.Float)) (M.add "cos" (Type.Fun ([Type.Float], Type.Float)) (M.add "sin" (Type.Fun ([Type.Float], Type.Float)) (M.empty))));
+  (* Typing.extenv := M.empty; *)
   Emit.f outchan
     (RegAlloc.f
        (Simm.f
