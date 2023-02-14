@@ -33,6 +33,9 @@ let reg r =
 
 let load_label r label =
   let r' = reg r in
+  (* 外部関数の時はこちら *)
+  (* Printf.sprintf "\tadrp %s, %s@PAGE\n" r' label *)
+  (* クロージャの時はこちら *)
   Printf.sprintf "\tadr %s, %s\n" r' label
 
 (* 関数呼び出しのために引数を並べ替える(register shuffling) (caml2html: emit_shuffle) *)
@@ -77,8 +80,12 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
       Printf.fprintf oc "\tadrp %s, %s@PAGE\n" (reg reg_tmp) l;
       Printf.fprintf oc "\tldr %s, [%s, %s@PAGEOFF]\n" (reg x) (reg reg_tmp) l
   | NonTail(x), SetL(Id.L(y)) ->
+      (* クロージャのアドレス *)
       let s = load_label x y in
       Printf.fprintf oc "%s" s
+  | NonTail(x), SetExtL(Id.L(y)) ->
+      (* 外部関数のアドレス *)
+      Printf.fprintf oc "\tadrp %s, %s@PAGE\n" (reg x) y
   | NonTail(x), Mr(y) when x = y -> ()
   | NonTail(x), Mr(y) -> Printf.fprintf oc "\tmov %s, %s\n" (reg x) (reg y)
   | NonTail(x), Neg(y) -> Printf.fprintf oc "\tneg\t%s, %s\n" (reg x) (reg y)
@@ -124,7 +131,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
   | Tail, (Nop | Stw _ | Stfd _ | Comment _ | Save _ as exp) ->
       g' oc (NonTail(Id.gentmp Type.Unit), exp);
       Printf.fprintf oc "\tret\n";
-  | Tail, (Li _ | SetL _ | Mr _ | Neg _ | Add _ | Sub _ | Slw _ | Lwz _ as exp) ->
+  | Tail, (Li _ | SetL _ | SetExtL _ | Mr _ | Neg _ | Add _ | Sub _ | Slw _ | Lwz _ as exp) ->
       g' oc (NonTail(regs.(0)), exp);
       Printf.fprintf oc "\tret\n";
   | Tail, (FLi _ | FMr _ | FNeg _ | FAdd _ | FSub _ | FMul _ | FDiv _ | Lfd _ as exp) ->
