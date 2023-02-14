@@ -11,7 +11,7 @@
 # 	.long	1127219200
 # 	.long	-2147483648
 
-#	create_array
+# create_array
     .text
     .align	2
     .globl _min_caml_create_array
@@ -21,7 +21,7 @@ _min_caml_create_array:
     add x27, x27, 8
     ret
 
-# 	int_of_float, truncate
+# int_of_float, truncate
     .text
     .align	2
     .globl _min_caml_int_of_float
