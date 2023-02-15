@@ -11,14 +11,26 @@
 # 	.long	1127219200
 # 	.long	-2147483648
 
-# create_array
     .text
     .align	2
+
+# create_array
+# x0: number of elements
+# x1: initial value
     .globl _min_caml_create_array
 _min_caml_create_array:
-    mov x0, x27
+    mov x2, x0       // x2 = number of elements
+    mov x0, x27      // x0 = hp
+_min_caml_create_array_loop:
+    // if number of elements = 0
+    cmp x2, 0
+    b.eq _min_caml_create_array_exit
+    // if number of elements > 0
     str x1, [x27, 0]
     add x27, x27, 8
+    sub x2, x2, 1
+    b _min_caml_create_array_loop
+_min_caml_create_array_exit:
     ret
 
 # int_of_float, truncate
