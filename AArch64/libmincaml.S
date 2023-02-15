@@ -33,6 +33,25 @@ _min_caml_create_array_loop:
 _min_caml_create_array_exit:
     ret
 
+# create_float_array
+# x0: number of elements
+# d0: initial value
+    .globl _min_caml_create_float_array
+_min_caml_create_float_array:
+    mov x2, x0       // x2 = number of elements
+    mov x0, x27      // x0 = hp
+_min_caml_create_float_array_loop:
+    // if number of elements = 0
+    cmp x2, 0
+    b.eq _min_caml_create_float_array_exit
+    // if number of elements > 0
+    str d0, [x27, 0]
+    add x27, x27, 8
+    sub x2, x2, 1
+    b _min_caml_create_float_array_loop
+_min_caml_create_float_array_exit:
+    ret
+
 # int_of_float, truncate
     .text
     .align	2

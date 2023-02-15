@@ -21,6 +21,10 @@ void min_caml_print_int(int n) {
   printf("%d", n);
 }
 
+void min_caml_print_float(double n) {
+  printf("%lf", n);
+}
+
 void min_caml_print_newline() {
   printf("\n");
 }
