@@ -1,18 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-extern void min_caml_start(char *, char *);
-
-/* "stderr" is a macro and cannot be referred to in libmincaml.S, so
-   this "min_caml_stderr" is used (in place of "__iob+32") for better
-   portability (under SPARC emulators, for example).  Thanks to Steven
-   Shaw for reporting the problem and proposing this solution. */
-FILE *min_caml_stderr;
+extern int min_caml_start(char *, char *);
 
 int main() {
   char *hp, *sp;
 
-  min_caml_stderr = stderr;
   sp = alloca(1000000); hp = malloc(4000000);
   if (hp == NULL || sp == NULL) {
     fprintf(stderr, "malloc or alloca failed\n");
@@ -22,4 +15,16 @@ int main() {
   min_caml_start(sp, hp);
 
   return 0;
+}
+
+void min_caml_print_int(int n) {
+  printf("%d", n);
+}
+
+void min_caml_print_float(double n) {
+  printf("%lf", n);
+}
+
+void min_caml_print_newline() {
+  printf("\n");
 }
