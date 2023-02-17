@@ -106,9 +106,9 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
   | NonTail(x), FSub(y, z) -> Printf.fprintf oc "\tfsub\t%s, %s, %s\n" (reg x) (reg y) (reg z)
   | NonTail(x), FMul(y, z) -> Printf.fprintf oc "\tfmul\t%s, %s, %s\n" (reg x) (reg y) (reg z)
   | NonTail(x), FDiv(y, z) -> Printf.fprintf oc "\tfdiv\t%s, %s, %s\n" (reg x) (reg y) (reg z)
-  | NonTail(x), Lfd(y, V(z)) -> Printf.fprintf oc "\tldr %s, %s, %s\n" (reg x) (reg y) (reg z)
+  | NonTail(x), Lfd(y, V(z)) -> Printf.fprintf oc "\tldr %s, [%s, %s]\n" (reg x) (reg y) (reg z)
   | NonTail(x), Lfd(y, C(z)) -> Printf.fprintf oc "\tldr %s, [%s, %d]\n" (reg x) (reg y) z
-  | NonTail(_), Stfd(x, y, V(z)) -> Printf.fprintf oc "\tstr %s, %s, %s\n" (reg x) (reg y) (reg z)
+  | NonTail(_), Stfd(x, y, V(z)) -> Printf.fprintf oc "\tstr %s, [%s, %s]\n" (reg x) (reg y) (reg z)
   | NonTail(_), Stfd(x, y, C(z)) -> Printf.fprintf oc "\tstr %s, [%s, %d]\n" (reg x) (reg y) z
   | NonTail(_), Comment(s) -> Printf.fprintf oc "#\t%s\n" s
   (* 退避の仮想命令の実装 (caml2html: emit_save) *)
