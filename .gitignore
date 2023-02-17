@@ -4,7 +4,6 @@
 *.cmi
 *.o
 *.dSYM
-test/
 test/*.s
 test/*.ans
 test/*.cmp
