@@ -3,3 +3,7 @@
 *.cmo
 *.cmi
 *.o
+*.dSYM
+test/*.s
+a.out
+min-rt/min-rt.s
