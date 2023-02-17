@@ -193,32 +193,15 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
       g'_non_tail_if oc (NonTail(z)) e1 e2 "ble" "bgt"
   (* 関数呼び出しの仮想命令の実装 (caml2html: emit_call) *)
   | Tail, CallCls(x, ys, zs) -> (* 末尾呼び出し (caml2html: emit_tailcall) *)
-      Printf.fprintf oc "\t# CallCls start: %s\n" x;
-
       g'_args oc [(x, reg_cl)] ys zs;
       let ss = stacksize () in
-
-      (* lrをスタックへ退避 *)
-      Printf.fprintf oc "\tmov %s, lr\n" (reg reg_tmp);
-      Printf.fprintf oc "\tstr %s, [%s, %d]\n" (reg reg_tmp) (reg reg_sp) (ss - 8);
-      Printf.fprintf oc "\tadd %s, %s, %d\n" (reg reg_sp) (reg reg_sp) ss;
-
       (* クロージャを呼び出し *)
       Printf.fprintf oc "\tldr %s, [%s, 0]\n" (reg reg_sw) (reg reg_cl);
-      Printf.fprintf oc "\tblr %s\n" (reg reg_sw);
-
-      (* lrをスタックから復元 *)
-      Printf.fprintf oc "\tsub %s, %s, %d\n" (reg reg_sp) (reg reg_sp) ss;
-      Printf.fprintf oc "\tldr %s, [%s, %d]\n" (reg reg_tmp) (reg reg_sp) (ss - 8);
-      Printf.fprintf oc "\tmov lr, %s\n" (reg reg_tmp);
-
-      Printf.fprintf oc "\t# CallCls end: %s\n" x
+      Printf.fprintf oc "\tbr %s\n" (reg reg_sw)
   | Tail, CallDir(Id.L(x), ys, zs) -> (* 末尾呼び出し *)
       g'_args oc [] ys zs;
       Printf.fprintf oc "\tb\t%s\n" x
   | NonTail(a), CallCls(x, ys, zs) ->
-      Printf.fprintf oc "\t# CallCls start: %s\n" x;
-
       g'_args oc [(x, reg_cl)] ys zs;
       let ss = stacksize () in
 
@@ -241,9 +224,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
         Printf.fprintf oc "\tfmov %s, %s\n" (reg a) (reg fregs.(0));
 
       (* lrをスタックから復元 *)
-      Printf.fprintf oc "\tmov lr, %s\n" (reg reg_tmp);
-
-      Printf.fprintf oc "\t# CallCls end: %s\n" x
+      Printf.fprintf oc "\tmov lr, %s\n" (reg reg_tmp)
   | (NonTail(a), CallDir(Id.L(x), ys, zs)) ->
       g'_args oc [] ys zs;
       let ss = stacksize () in
