@@ -59,13 +59,13 @@ _min_caml_create_float_array_exit:
 _min_caml_int_of_float:
     .globl _min_caml_truncate
 _min_caml_truncate:
-    fcvtzs w0, d0
+    fcvtzs x0, d0
     ret
 
 # float_of_int
 	.globl _min_caml_float_of_int
 _min_caml_float_of_int:
-    scvtf d0, w0
+    scvtf d0, x0
     ret
 
 # abs_float
