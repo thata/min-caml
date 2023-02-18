@@ -26,18 +26,21 @@ void min_caml_print_float(double d) {
   printf("%lf", d);
 }
 
+// OK
 void min_caml_print_byte(long n) {
-  char c[] = {0};
+  char c[] = {0, 0};
   c[0] = (char)0xff & n;
   printf("%s", c);
 }
 
+// OK
 long min_caml_read_int() {
-    long n;
-    scanf("%ld", &n);
-    return n;
+  long l;
+  scanf("%ld", &l);
+  return l;
 }
 
+// OK
 double min_caml_read_float() {
     double d;
     scanf("%lf", &d);
