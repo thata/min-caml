@@ -85,7 +85,9 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
       Printf.fprintf oc "%s" s
   | NonTail(x), SetExtL(Id.L(y)) ->
       (* 外部関数のアドレス *)
-      Printf.fprintf oc "\tadrp %s, %s@PAGE\n" (reg x) y
+      Printf.fprintf oc "\tadrp %s, %s@PAGE\n" (reg x) y;
+      Printf.fprintf oc "\tadd %s, %s, %s@PAGEOFF\n" (reg x) (reg x) y
+      (* Printf.fprintf oc "\tadrp %s, %s@PAGE\n" (reg x) y *)
   | NonTail(x), Mr(y) when x = y -> ()
   | NonTail(x), Mr(y) -> Printf.fprintf oc "\tmov %s, %s\n" (reg x) (reg y)
   | NonTail(x), Neg(y) -> Printf.fprintf oc "\tneg\t%s, %s\n" (reg x) (reg y)
