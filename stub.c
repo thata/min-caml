@@ -4,7 +4,9 @@
 
 extern int min_caml_start(char *, char *);
 
-int main() {
+static FILE *fp;
+
+int main( int argc, char *argv[] ) {
   char *hp, *sp;
 
   sp = alloca(1000000); hp = malloc(4000000);
@@ -12,8 +14,16 @@ int main() {
     fprintf(stderr, "malloc or alloca failed\n");
     return 1;
   }
+
+  // ball.sld を開く
+  fp = fopen("ball.sld", "r");
+
+
   fprintf(stderr, "sp = %p, hp = %p\n", sp, hp);
   min_caml_start(sp, hp);
+
+  // ball.sld を閉じる
+  fclose(fp);
 
   return 0;
 }
@@ -36,14 +46,18 @@ void min_caml_print_byte(long n) {
 // OK
 long min_caml_read_int() {
   long l;
-  scanf("%ld", &l);
+  // ball.sld から int を読み込む
+  fscanf(fp, "%ld", &l);
+  // scanf("%ld", &l);
   return l;
 }
 
 // OK
 double min_caml_read_float() {
     double d;
-    scanf("%lf", &d);
+    // ball.sld から double を読み込む
+    fscanf(fp, "%lf", &d);
+    // scanf("%lf", &d);
     return d;
 }
 
