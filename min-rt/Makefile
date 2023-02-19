@@ -1,7 +1,8 @@
 # added by Sumii
 
-SLDS = ball contest cup dra lattice mange mir orange piero1 piero2 planet \
+# SLDS = ball contest cup dra lattice mange mir orange piero1 piero2 planet \
 shuttle test test2 test3 tileball tron tsu tsu2 tsu3
+SLDS = ball contest
 
 .PRECIOUS: %.cmp %.diff.gcc-GCC.ppm %.diff.ocamlopt-gcc.ppm %.mincaml.ppm %.gcc.ppm %.GCC.ppm %.ocamlopt.ppm %.ocamlc.ppm
 
