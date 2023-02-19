@@ -43,9 +43,7 @@ void min_caml_print_float(double d) {
 
 // OK
 void min_caml_print_byte(long n) {
-  char c[] = {0, 0};
-  c[0] = (char)0xff & n;
-  printf("%s", c);
+  putchar(n);
 }
 
 // OK

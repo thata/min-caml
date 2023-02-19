@@ -1138,25 +1138,17 @@ in
 (*MINCAML*)let rec write_rgb _ =
 (*NOMINCAML let write_rgb _ =*)
   (
-   (* print_byte がバグってるので、一次対応として P3 形式で出力する *)
-
    let red = int_of_float rgb.(0) in
    let red = if red > 255 then 255 else red in
-   (* print_byte red; *)
-   print_int red;
+   print_byte red;
 
    let green = int_of_float rgb.(1) in
    let green = if green > 255 then 255 else green in
-   (* print_byte green; *)
-   print_byte 32;
-   print_int green;
+   print_byte green;
 
    let blue = int_of_float rgb.(2) in
    let blue = if blue > 255 then 255 else blue in
-   (* print_byte blue *)
-   print_byte 32;
-   print_int blue;
-   print_byte 32
+   print_byte blue
   )
 in
 
@@ -1166,8 +1158,8 @@ in
     print_byte 80; (* 'P' *)
 
     (* print_byte がバグってるので、一次対応として P3 形式で出力する *)
-    print_byte (48 + 3); (* 48 = '0' *)
-    (* print_byte (48 + 6); *) (* 48 = '0' *)
+    (* 48 = '0' *)
+    print_byte (48 + 6);
 
     print_byte 10;
     print_int size.(0);
