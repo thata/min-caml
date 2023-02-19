@@ -20,7 +20,8 @@ ppmdiff: ppm.ml diff.ml
 	ocamlopt $^ -o $@
 
 %.mincaml.ppm: %.sld min-rt.min-caml
-	time ./min-rt.min-caml < $< > $@.tmp
+#	time ./min-rt.min-caml < $< > $@.tmp
+	time ./min-rt.min-caml $< > $@.tmp
 	mv $@.tmp $@
 min-rt.min-caml: min-rt.s globals.s ../libmincaml.S ../stub.c
 	gcc -g -O2 -Wall $^ -lm -o min-rt.min-caml

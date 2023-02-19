@@ -15,8 +15,13 @@ int main( int argc, char *argv[] ) {
     return 1;
   }
 
-  // ball.sld を開く
-  fp = fopen("ball.sld", "r");
+  // 引数で渡したファイルを開く
+  if (argc < 2) {
+    fprintf(stderr, "Usage: %s <file.sld>", argv[0]);
+    return 1;
+  }
+  fp = fopen(argv[1], "r");
+  // fp = fopen("ball.sld", "r");
 
 
   fprintf(stderr, "sp = %p, hp = %p\n", sp, hp);
