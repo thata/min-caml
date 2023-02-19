@@ -4,7 +4,7 @@
 
 extern int min_caml_start(char *, char *);
 
-static FILE *fp;
+// static FILE *fp;
 
 int main( int argc, char *argv[] ) {
   char *hp, *sp;
@@ -15,20 +15,18 @@ int main( int argc, char *argv[] ) {
     return 1;
   }
 
-  // 引数で渡したファイルを開く
-  if (argc < 2) {
-    fprintf(stderr, "Usage: %s <file.sld>", argv[0]);
-    return 1;
-  }
-  fp = fopen(argv[1], "r");
-  // fp = fopen("ball.sld", "r");
-
+  // NOTE: 標準入力から読み込むとlldbやXcodeでデバッグしづらいので、その時は引数で渡したファイルから読み込むようにする
+  // // 引数で渡したファイルを開く
+  // if (argc < 2) {
+  //   fprintf(stderr, "Usage: %s <file.sld>", argv[0]);
+  //   return 1;
+  // }
+  // fp = fopen(argv[1], "r");
 
   fprintf(stderr, "sp = %p, hp = %p\n", sp, hp);
   min_caml_start(sp, hp);
 
-  // ball.sld を閉じる
-  fclose(fp);
+  // fclose(fp);
 
   return 0;
 }
@@ -49,18 +47,16 @@ void min_caml_print_byte(long n) {
 // OK
 long min_caml_read_int() {
   long l;
-  // ball.sld から int を読み込む
-  fscanf(fp, "%ld", &l);
-  // scanf("%ld", &l);
+  // fscanf(fp, "%ld", &l);
+  scanf("%ld", &l);
   return l;
 }
 
 // OK
 double min_caml_read_float() {
     double d;
-    // ball.sld から double を読み込む
-    fscanf(fp, "%lf", &d);
-    // scanf("%lf", &d);
+    // fscanf(fp, "%lf", &d);
+    scanf("%lf", &d);
     return d;
 }
 
