@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+ln -sf RV32/{*.ml{,i},libmincaml.S} .
+cd test; ln -sf RV32/{,too}manyargs.ml .; cd ..
+cd shootout; ln -sf RV32/Makefile .; cd ..
+cd bytemark; ln -sf RV32/Makefile .; cd ..
+cd min-rt; ln -sf RV32/globals.s .; cd ..
