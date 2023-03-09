@@ -6,6 +6,7 @@
 RESULT = min-caml
 NCSUFFIX = .opt
 CC = gcc
+TGT_CC = riscv32-unknown-elf-gcc
 CFLAGS = -g -O2 -Wall
 OCAMLLDFLAGS=-warn-error -31
 
@@ -33,7 +34,7 @@ adder funcomp cls-rec cls-bug cls-bug2 cls-reg-bug \
 shuffle spill spill2 spill3 join-stack join-stack2 join-stack3 \
 join-reg join-reg2 non-tail-if non-tail-if2 \
 inprod inprod-rec inprod-loop matmul matmul-flat \
-manyargs
+manyargs 4649
 
 do_test: $(TESTS:%=test/%.cmp)
 
@@ -43,9 +44,9 @@ TRASH = $(TESTS:%=test/%.s) $(TESTS:%=test/%) $(TESTS:%=test/%.res) $(TESTS:%=te
 test/%.s: $(RESULT) test/%.ml
 	./$(RESULT) test/$*
 test/%: test/%.s libmincaml.S stub.c
-	$(CC) $(CFLAGS) $^ -lm -o $@
+	$(TGT_CC) $(CFLAGS) $^ -lm -o $@
 test/%.res: test/%
-	$< > $@
+	spike /opt/riscv/pk/riscv32-unknown-elf/bin/pk $< | grep -v "bbl loader" | grep -v "sp =" > $@
 test/%.ans: test/%.ml
 	ocaml $< > $@
 test/%.cmp: test/%.res test/%.ans
