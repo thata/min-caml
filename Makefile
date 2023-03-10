@@ -46,7 +46,7 @@ test/%.s: $(RESULT) test/%.ml
 test/%: test/%.s libmincaml.S stub.c
 	$(TGT_CC) $(CFLAGS) $^ -lm -o $@
 test/%.res: test/%
-	spike /opt/riscv/pk/riscv32-unknown-elf/bin/pk $< | grep -v "bbl loader" | grep -v "sp =" > $@
+	spike /opt/riscv/pk/riscv32-unknown-elf/bin/pk $< > $@
 test/%.ans: test/%.ml
 	ocaml $< > $@
 test/%.cmp: test/%.res test/%.ans

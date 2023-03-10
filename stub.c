@@ -25,7 +25,7 @@ int main( int argc, char *argv[] ) {
   // }
   // fp = fopen(argv[1], "r");
 
-  fprintf(stderr, "sp = %p, hp = %p\n", sp, hp);
+  // fprintf(stderr, "sp = %p, hp = %p\n", sp, hp);
   min_caml_start(sp, hp);
 
   // fclose(fp);
