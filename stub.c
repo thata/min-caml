@@ -2,9 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-extern int min_caml_start(char *, char *) asm ("_min_caml_start");
-extern void min_caml_print_int(int) asm ("_min_caml_print_int");
-extern void min_caml_print_newline() asm ("_min_caml_print_newline");
+extern int min_caml_start(char *, char *);
 
 // static FILE *fp;
 

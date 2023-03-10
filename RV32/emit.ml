@@ -304,10 +304,10 @@ let f oc (Prog(data, fundefs, e)) =
          Printf.fprintf oc "\t.long\t%ld\n" (getlo d))
        data);
   Printf.fprintf oc "\t.text\n";
-  Printf.fprintf oc "\t.globl _min_caml_start\n";
+  Printf.fprintf oc "\t.globl min_caml_start\n";
   Printf.fprintf oc "\t.align 2\n";
   List.iter (fun fundef -> h oc fundef) fundefs;
-  Printf.fprintf oc "_min_caml_start: # main entry point\n";
+  Printf.fprintf oc "min_caml_start: # main entry point\n";
 
   (* sp と hp を設定 *)
   Printf.fprintf oc "\tmv %s, %s\n" (reg reg_sp) (reg "%a0");
