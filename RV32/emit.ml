@@ -61,19 +61,19 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
   | NonTail(_), Nop -> ()
   | NonTail(x), Li(i) when -32768 <= i && i < 32768 -> Printf.fprintf oc "\tli\t%s, %d\n" (reg x) i
   | NonTail(x), Li(i) ->
-      let n = i lsr 16 in
-      let m = i lxor (n lsl 16) in
+      let n = i lsr 12 in
+      let m = i lxor (n lsl 12) in
       let r = reg x in
-      Printf.fprintf oc "\tlis\t%s, %d\n" r n;
-      Printf.fprintf oc "\tori\t%s, %s, %d\n" r r m
-  | NonTail(x), FLi(Id.L(l)) ->
+      Printf.fprintf oc "\tlui %s, %d\n" r n;
+      Printf.fprintf oc "\taddi %s, %s, %d\n" r r m
+| NonTail(x), FLi(Id.L(l)) ->
       let s = load_label (reg reg_tmp) l in
       Printf.fprintf oc "%s\tlfd\t%s, 0(%s)\n" s (reg x) (reg reg_tmp)
   | NonTail(x), SetL(Id.L(y)) ->
       let s = load_label x y in
       Printf.fprintf oc "%s" s
   | NonTail(x), Mr(y) when x = y -> ()
-  | NonTail(x), Mr(y) -> Printf.fprintf oc "\tmr\t%s, %s\n" (reg x) (reg y)
+  | NonTail(x), Mr(y) -> Printf.fprintf oc "\tmv %s, %s\n" (reg x) (reg y)
   | NonTail(x), Neg(y) -> Printf.fprintf oc "\tneg\t%s, %s\n" (reg x) (reg y)
   | NonTail(x), Add(y, V(z)) -> Printf.fprintf oc "\tadd\t%s, %s, %s\n" (reg x) (reg y) (reg z)
   | NonTail(x), Add(y, C(z)) -> Printf.fprintf oc "\taddi\t%s, %s, %d\n" (reg x) (reg y) z
@@ -128,14 +128,15 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
       | _ -> assert false);
       Printf.fprintf oc "\tret\n";
   | Tail, IfEq(x, V(y), e1, e2) ->
-      Printf.fprintf oc "\tcmpw\tcr7@, %s, %s\n" (reg x) (reg y);
-      g'_tail_if oc e1 e2 "beq" "bne"
+      (* 新しい if 実装済み *)
+      g'_tail_if_new oc (reg x) (reg y) e1 e2 "beq" "bne"
   | Tail, IfEq(x, C(y), e1, e2) ->
-      Printf.fprintf oc "\tcmpwi\tcr7@, %s, %d\n" (reg x) y;
-      g'_tail_if oc e1 e2 "beq" "bne"
+      (* 新しい if 実装済み *)
+      Printf.fprintf oc "\tli %s, %d\n" (reg reg_tmp) y;
+      g'_tail_if_new oc (reg x) (reg reg_tmp) e1 e2 "beq" "bne"
   | Tail, IfLE(x, V(y), e1, e2) ->
-      Printf.fprintf oc "\tcmpw\tcr7@, %s, %s\n" (reg x) (reg y);
-      g'_tail_if oc e1 e2 "ble" "bgt"
+      (* 新しい if 実装済み *)
+      g'_tail_if_new oc (reg x) (reg y) e1 e2 "ble" "bgt"
   | Tail, IfLE(x, C(y), e1, e2) ->
       (* 新しい if 実装済み *)
       Printf.fprintf oc "\tli %s, %d\n" (reg reg_tmp) y;
@@ -159,8 +160,8 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
       Printf.fprintf oc "\tcmpwi\tcr7@@, %s, %d\n" (reg x) y;
       g'_non_tail_if oc (NonTail(z)) e1 e2 "beq" "bne"
   | NonTail(z), IfLE(x, V(y), e1, e2) ->
-      Printf.fprintf oc "\tcmpw\tcr7@@, %s, %s\n" (reg x) (reg y);
-      g'_non_tail_if oc (NonTail(z)) e1 e2 "ble" "bgt"
+      (* 新しい if 実装済み *)
+      g'_non_tail_if_new oc (reg x) (reg y) (NonTail(z)) e1 e2 "ble" "bgt"
   | NonTail(z), IfLE(x, C(y), e1, e2) ->
       Printf.fprintf oc "\tcmpwi\tcr7@@, %s, %d\n" (reg x) y;
       g'_non_tail_if oc (NonTail(z)) e1 e2 "ble" "bgt"
@@ -183,7 +184,8 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
       Printf.fprintf oc "\tmtctr\t%s\n\tbctr\n" (reg reg_sw);
   | Tail, CallDir(Id.L(x), ys, zs) -> (* 末尾呼び出し *)
       g'_args oc [] ys zs;
-      Printf.fprintf oc "\tb\t%s\n" x
+      (* NOTE: 末尾呼び出し時には call ではなく j で遷移する *)
+      Printf.fprintf oc "\tj %s\n" x
   | NonTail(a), CallCls(x, ys, zs) ->
       Printf.fprintf oc "\tmflr\t%s\n" (reg reg_tmp);
       g'_args oc [(x, reg_cl)] ys zs;
@@ -238,6 +240,20 @@ and g'_tail_if oc e1 e2 b bn =
   Printf.fprintf oc "%s:\n" b_else;
   stackset := stackset_back;
   g oc (Tail, e2)
+and g'_non_tail_if_new oc x y dest e1 e2 b bn =
+  let b_else = Id.genid (b ^ "_else") in
+  let b_cont = Id.genid (b ^ "_cont") in
+  Printf.fprintf oc "\t%s %s, %s, %s\n" bn x y b_else;
+  let stackset_back = !stackset in
+  g oc (dest, e1);
+  let stackset1 = !stackset in
+  Printf.fprintf oc "\tb\t%s\n" b_cont;
+  Printf.fprintf oc "%s:\n" b_else;
+  stackset := stackset_back;
+  g oc (dest, e2);
+  Printf.fprintf oc "%s:\n" b_cont;
+  let stackset2 = !stackset in
+  stackset := S.inter stackset1 stackset2
 and g'_non_tail_if oc dest e1 e2 b bn =
   let b_else = Id.genid (b ^ "_else") in
   let b_cont = Id.genid (b ^ "_cont") in
