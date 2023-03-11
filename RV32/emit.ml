@@ -2,6 +2,7 @@ open Asm
 
 external gethi : float -> int32 = "gethi"
 external getlo : float -> int32 = "getlo"
+external getf : float -> int32 = "getf"
 
 let stackset = ref S.empty (* すでにSaveされた変数の集合 (caml2html: emit_stackset) *)
 let stackmap = ref [] (* Saveされた変数の、スタックにおける位置 (caml2html: emit_stackmap) *)
@@ -67,8 +68,8 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
       Printf.fprintf oc "\tlui %s, %d\n" r n;
       Printf.fprintf oc "\taddi %s, %s, %d\n" r r m
 | NonTail(x), FLi(Id.L(l)) ->
-      let s = load_label (reg reg_tmp) l in
-      Printf.fprintf oc "%s\tlfd\t%s, 0(%s)\n" s (reg x) (reg reg_tmp)
+      Printf.fprintf oc "\tlui %s, %%hi(%s)\n" (reg reg_tmp) l;
+      Printf.fprintf oc "\tflw %s, %%lo(%s)(%s)\n" (reg x) l (reg reg_tmp)
   | NonTail(x), SetL(Id.L(y)) ->
       let s = load_label x y in
       Printf.fprintf oc "%s" s
@@ -295,13 +296,12 @@ let h oc { name = Id.L(x); args = _; fargs = _; body = e; ret = _ } =
 let f oc (Prog(data, fundefs, e)) =
   Format.eprintf "generating assembly...@.";
   if data <> [] then
-    (Printf.fprintf oc "\t.data\n\t.literal8\n";
+    (Printf.fprintf oc "\t.data\n";
      List.iter
        (fun (Id.L(x), d) ->
-         Printf.fprintf oc "\t.align 3\n";
+         Printf.fprintf oc "\t.align 2\n";
          Printf.fprintf oc "%s:\t # %f\n" x d;
-         Printf.fprintf oc "\t.long\t%ld\n" (gethi d);
-         Printf.fprintf oc "\t.long\t%ld\n" (getlo d))
+         Printf.fprintf oc "\t.long\t%ld\n" (getf d))
        data);
   Printf.fprintf oc "\t.text\n";
   Printf.fprintf oc "\t.globl min_caml_start\n";
