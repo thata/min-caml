@@ -51,6 +51,10 @@ test/%.ans: test/%.ml
 	ocaml $< > $@
 test/%.cmp: test/%.res test/%.ans
 	diff $^ > $@
+shootout/%.s: $(RESULT) shootout/%.ml
+	./$(RESULT) shootout/$*
+shootout/%: shootout/%.s libmincaml.S stub.c
+	$(TGT_CC) $(CFLAGS) $^ -lm -o $@
 
 min-caml.html: main.mli main.ml id.ml m.ml s.ml \
 		syntax.ml type.ml parser.mly lexer.mll typing.mli typing.ml kNormal.mli kNormal.ml \
