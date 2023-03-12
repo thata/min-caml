@@ -36,4 +36,5 @@ print_int
      ((sin (cos (sqrt (abs_float (-12.3))))
          +. 4.5 -. 6.7 *. 8.9 /. 1.23456789)
         *. float_of_int 1000000))
-(* => -48300296 *)
+(* float な min-caml だと -44604260 が返る *)
+(* double な OCaml だと -44604262 が返る *)

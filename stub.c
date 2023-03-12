@@ -83,3 +83,24 @@ float min_caml_floor(float x) {
 float min_caml_sin(float x) {
   return sin(x);
 }
+
+// test/float.ml を実行するために以下を追加した
+// ここから
+
+float min_caml_abs_float(float x) {
+  return fabs(x);
+}
+
+float min_caml_sqrt(float x) {
+  return sqrt(x);
+}
+
+float min_caml_float_of_int(int x) {
+  return (float)x;
+}
+
+int min_caml_int_of_float(float x) {
+  return (int)x;
+}
+
+// ここまで
