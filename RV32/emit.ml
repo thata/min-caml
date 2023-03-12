@@ -154,8 +154,10 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
       Printf.fprintf oc "\taddi %s, zero, 1\n" (reg reg_tmp2);
       g'_tail_if_new oc (reg reg_tmp) (reg reg_tmp2) e1 e2 "beq" "bne"
   | Tail, IfFLE(x, y, e1, e2) ->
-      Printf.fprintf oc "\tfcmpu\tcr7@@@@, %s, %s\n" (reg x) (reg y);
-      g'_tail_if oc e1 e2 "ble" "bgt"
+      (* 新しい if 実装済み（浮動小数点数対応） *)
+      Printf.fprintf oc "\tfle.s %s, %s, %s\n" (reg reg_tmp) (reg x) (reg y);
+      Printf.fprintf oc "\taddi %s, zero, 1\n" (reg reg_tmp2);
+      g'_tail_if_new oc (reg reg_tmp) (reg reg_tmp2) e1 e2 "beq" "bne"
   | NonTail(z), IfEq(x, V(y), e1, e2) ->
       Printf.fprintf oc "\tcmpw\tcr7@@IfEq, %s, %s\n" (reg x) (reg y);
       g'_non_tail_if oc (NonTail(z)) e1 e2 "beq" "bne"
