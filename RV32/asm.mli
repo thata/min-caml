@@ -14,7 +14,7 @@ and exp =
   | Slw of Id.t * id_or_imm
   | Lwz of Id.t * id_or_imm
   | Stw of Id.t * Id.t * id_or_imm
-  | FMr of Id.t 
+  | FMr of Id.t
   | FNeg of Id.t
   | FAdd of Id.t * Id.t
   | FSub of Id.t * Id.t
@@ -50,6 +50,7 @@ val reg_fsw : Id.t
 val reg_hp : Id.t
 val reg_sp : Id.t
 val reg_tmp : Id.t
+val reg_tmp2 : Id.t
 val is_reg : Id.t -> bool
 
 val fv : t -> Id.t list

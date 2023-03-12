@@ -83,7 +83,7 @@ let regs = (* Array.init 27 (fun i -> Printf.sprintf "_R_%d" i) *)
   [|
     "%a0"; "%a1"; "%a2"; "%a3"; "%a4"; "%a5"; "%a6"; "%a7";
     "%s1"; "%s2"; "%s3"; "%s4"; "%s5"; "%s6"; "%s7"; "%s8"; "%s9";
-    "%t1"; "%t2"; "%t3"; "%t4"; "%t5"; "%t6"
+    "%t2"; "%t3"; "%t4"; "%t5"; "%t6"
   |]
 let fregs =
   [|
@@ -101,6 +101,7 @@ let reg_fsw = fregs.(Array.length fregs - 1) (* temporary for swap *)
 let reg_sp = "%s10" (* stack pointer *)
 let reg_hp = "%s11" (* heap pointer (caml2html: sparcasm_reghp) *)
 let reg_tmp = "%t0" (* t0 を tmp として使ってみる *)
+let reg_tmp2 = "%t1" (* t1 を tmp2 として使ってみる *)
 let is_reg x = (x.[0] = '%')
 
 (* super-tenuki *)
