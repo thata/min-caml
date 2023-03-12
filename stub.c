@@ -36,7 +36,7 @@ void min_caml_print_int(int n) {
 }
 
 void min_caml_print_float(float f) {
-  printf("%f", f);
+  printf("%g", f);
 }
 
 // OK
