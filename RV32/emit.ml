@@ -188,7 +188,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
   | Tail, CallCls(x, ys, zs) -> (* 末尾呼び出し (caml2html: emit_tailcall) *)
       g'_args oc [(x, reg_cl)] ys zs;
       Printf.fprintf oc "\tlw %s, 0(%s)\n" (reg reg_sw) (reg reg_cl);
-      Printf.fprintf oc "\tmtctr\t%s\n\tbctr\n" (reg reg_sw);
+      Printf.fprintf oc "\tjr %s\n" (reg reg_sw);
   | Tail, CallDir(Id.L(x), ys, zs) -> (* 末尾呼び出し *)
       g'_args oc [] ys zs;
       (* NOTE: 末尾呼び出し時には call ではなく j で遷移する *)
@@ -205,8 +205,6 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
       (* 参考: https://ie.u-ryukyu.ac.jp/~kono/compiler/c2/powerpc.html *)
       Printf.fprintf oc "\tlw %s, 0(%s)\n" (reg reg_tmp) (reg reg_cl);
       Printf.fprintf oc "\tjalr %s\n" (reg reg_tmp);
-      (* Printf.fprintf oc "\tmtctr\t%s\n" (reg reg_tmp);
-      Printf.fprintf oc "\tbctrl\n"; *)
 
       Printf.fprintf oc "\taddi %s, %s, %d\n" (reg reg_sp) (reg reg_sp) ((-1) * ss);
       Printf.fprintf oc "\tlw %s, %d(%s)\n" (reg reg_tmp) (ss - 4) (reg reg_sp);
