@@ -103,4 +103,8 @@ int min_caml_int_of_float(float x) {
   return (int)x;
 }
 
+int min_caml_truncate(float x) {
+  return (int)x;
+}
+
 // ここまで

@@ -168,14 +168,16 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
       (* 新しい if 実装済み *)
       g'_non_tail_if_new oc (reg x) (reg y) (NonTail(z)) e1 e2 "ble" "bgt"
   | NonTail(z), IfLE(x, C(y), e1, e2) ->
-      Printf.fprintf oc "\tcmpwi\tcr7@@, %s, %d\n" (reg x) y;
-      g'_non_tail_if oc (NonTail(z)) e1 e2 "ble" "bgt"
+      (* 新しい if 実装済み *)
+      Printf.fprintf oc "\tli %s, %d\n" (reg reg_tmp) y;
+      g'_non_tail_if_new oc (reg x) (reg reg_tmp) (NonTail(z)) e1 e2 "ble" "bgt"
   | NonTail(z), IfGE(x, V(y), e1, e2) ->
       Printf.fprintf oc "\tcmpw\tcr7@@, %s, %s\n" (reg x) (reg y);
       g'_non_tail_if oc (NonTail(z)) e1 e2 "bge" "blt"
   | NonTail(z), IfGE(x, C(y), e1, e2) ->
-      Printf.fprintf oc "\tcmpwi\tcr7@@, %s, %d\n" (reg x) y;
-      g'_non_tail_if oc (NonTail(z)) e1 e2 "bge" "blt"
+      (* 新しい if 実装済み *)
+      Printf.fprintf oc "\tli %s, %d\n" (reg reg_tmp) y;
+      g'_non_tail_if_new oc (reg x) (reg reg_tmp) (NonTail(z)) e1 e2 "bge" "blt"
   | NonTail(z), IfFEq(x, y, e1, e2) ->
       (* 新しい if 実装済み（浮動小数点数対応） *)
       Printf.fprintf oc "\tfeq.s %s, %s, %s\n" (reg reg_tmp) (reg x) (reg y);
