@@ -20,7 +20,7 @@ min_caml_create_array_loop:
   // if number of elements = 0
   beq t2, zero, min_caml_create_array_exit
   // if number of elements > 0
-  sw a1, 0(a0)
+  sw a1, 0(s11)
   addi s11, s11, 4
   addi t2, t2, -1
   j min_caml_create_array_loop
@@ -38,9 +38,9 @@ min_caml_create_float_array_loop:
   // if number of elements = 0
   beq t2, zero, min_caml_create_float_array_exit
   // if number of elements > 0
-  fsw fa0, 0(a0)
+  fsw fa0, 0(s11)
   addi s11, s11, 4
   addi t2, t2, -1
-  j min_caml_create_array_loop
+  j min_caml_create_float_array_loop
 min_caml_create_float_array_exit:
   ret

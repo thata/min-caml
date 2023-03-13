@@ -77,7 +77,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
   | NonTail(x), Sub(y, V(z)) -> Printf.fprintf oc "\tsub\t%s, %s, %s\n" (reg x) (reg y) (reg z)
   | NonTail(x), Sub(y, C(z)) -> Printf.fprintf oc "\taddi %s, %s, %d\n" (reg x) (reg y) ((-1) * z)
   | NonTail(x), Slw(y, V(z)) -> Printf.fprintf oc "\tslw\t%s, %s, %s\n" (reg x) (reg y) (reg z)
-  | NonTail(x), Slw(y, C(z)) -> Printf.fprintf oc "\tslwi\t%s, %s, %d\n" (reg x) (reg y) z
+  | NonTail(x), Slw(y, C(z)) -> Printf.fprintf oc "\tslli %s, %s, %d\n" (reg x) (reg y) z
   | NonTail(x), Lwz(y, V(z)) -> Printf.fprintf oc "\tlwzx\t%s, %s, %s\n" (reg x) (reg y) (reg z)
   | NonTail(x), Lwz(y, C(z)) -> Printf.fprintf oc "\tlw %s, %d(%s)\n" (reg x) z (reg y)
   | NonTail(_), Stw(x, y, V(z)) -> Printf.fprintf oc "\tstwx\t%s, %s, %s\n" (reg x) (reg y) (reg z)
@@ -89,8 +89,11 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
   | NonTail(x), FSub(y, z) -> Printf.fprintf oc "\tfsub.s %s, %s, %s\n" (reg x) (reg y) (reg z)
   | NonTail(x), FMul(y, z) -> Printf.fprintf oc "\tfmul.s %s, %s, %s\n" (reg x) (reg y) (reg z)
   | NonTail(x), FDiv(y, z) -> Printf.fprintf oc "\tfdiv.s %s, %s, %s\n" (reg x) (reg y) (reg z)
-  | NonTail(x), Lfd(y, V(z)) -> Printf.fprintf oc "\tlfdx\t%s, %s, %s\n" (reg x) (reg y) (reg z)
-  | NonTail(x), Lfd(y, C(z)) -> Printf.fprintf oc "\tflw %s, %d(%s)\n" (reg x) z (reg y)
+  | NonTail(x), Lfd(y, V(z)) ->
+      Printf.fprintf oc "\tadd %s, %s, %s\n" (reg reg_tmp) (reg y) (reg z);
+      Printf.fprintf oc "\tflw %s, 0(%s)\n" (reg x) (reg reg_tmp)
+  | NonTail(x), Lfd(y, C(z)) ->
+      Printf.fprintf oc "\tflw %s, %d(%s)\n" (reg x) z (reg y)
   | NonTail(_), Stfd(x, y, V(z)) -> Printf.fprintf oc "\tstfdx\t%s, %s, %s\n" (reg x) (reg y) (reg z)
   | NonTail(_), Stfd(x, y, C(z)) -> Printf.fprintf oc "\tfsw %s, %d(%s)\n" (reg x) z (reg y)
   | NonTail(_), Comment(s) -> Printf.fprintf oc "#\t%s\n" s

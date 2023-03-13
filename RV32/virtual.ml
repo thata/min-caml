@@ -124,7 +124,7 @@ let rec g env = function (* 式の仮想マシンコード生成 (caml2html: vir
       | Type.Array(Type.Float) ->
           (* TODO: double(8バイト)ではなくfloat(4バイト)なので修正する必要がありそう *)
           (* see: https://scrapbox.io/htkymtks/AArch64%E3%81%B8%E7%A7%BB%E6%A4%8D%E4%B8%AD%E3%81%AEMinCaml%E3%81%AE%E9%85%8D%E5%88%97%E3%81%BE%E3%82%8F%E3%82%8A%E3%82%92%E5%AE%9F%E8%A3%85 *)
-          Let((offset, Type.Int), Slw(y, C(3)),
+          Let((offset, Type.Int), Slw(y, C(2)),
               Ans(Lfd(x, V(offset))))
       | Type.Array(_) ->
           Let((offset, Type.Int), Slw(y, C(2)),
@@ -135,7 +135,7 @@ let rec g env = function (* 式の仮想マシンコード生成 (caml2html: vir
       (match M.find x env with
       | Type.Array(Type.Unit) -> Ans(Nop)
       | Type.Array(Type.Float) ->
-          Let((offset, Type.Int), Slw(y, C(3)),
+          Let((offset, Type.Int), Slw(y, C(2)),
               Ans(Stfd(z, x, V(offset))))
       | Type.Array(_) ->
           Let((offset, Type.Int), Slw(y, C(2)),
