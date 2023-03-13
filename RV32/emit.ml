@@ -87,7 +87,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
       Printf.fprintf oc "\tsw %s, 0(%s)\n" (reg x) (reg reg_tmp)
   | NonTail(_), Stw(x, y, C(z)) -> Printf.fprintf oc "\tsw %s, %d(%s)\n" (reg x) z (reg y)
   | NonTail(x), FMr(y) when x = y -> ()
-  | NonTail(x), FMr(y) -> Printf.fprintf oc "\tfmr\t%s, %s\n" (reg x) (reg y)
+  | NonTail(x), FMr(y) -> Printf.fprintf oc "\tfmv.s %s, %s\n" (reg x) (reg y)
   | NonTail(x), FNeg(y) -> Printf.fprintf oc "\tfneg.s %s, %s\n" (reg x) (reg y)
   | NonTail(x), FAdd(y, z) -> Printf.fprintf oc "\tfadd.s %s, %s, %s\n" (reg x) (reg y) (reg z)
   | NonTail(x), FSub(y, z) -> Printf.fprintf oc "\tfsub.s %s, %s, %s\n" (reg x) (reg y) (reg z)
@@ -219,7 +219,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
       if List.mem a allregs && a <> regs.(0) then
         Printf.fprintf oc "\tmv %s, %s\n" (reg a) (reg regs.(0))
       else if List.mem a allfregs && a <> fregs.(0) then
-        Printf.fprintf oc "\tfmr\t%s, %s\n" (reg a) (reg fregs.(0));
+        Printf.fprintf oc "\tfmv.s %s, %s\n" (reg a) (reg fregs.(0));
       (* tmp レジスタから ra を復帰 *)
       Printf.fprintf oc "\tmv ra, %s\n" (reg reg_tmp)
   | (NonTail(a), CallDir(Id.L(x), ys, zs)) ->
@@ -238,7 +238,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
       if List.mem a allregs && a <> regs.(0) then
         Printf.fprintf oc "\tmv %s, %s\n" (reg a) (reg regs.(0))
       else if List.mem a allfregs && a <> fregs.(0) then
-        Printf.fprintf oc "\tfmr\t%s, %s\n" (reg a) (reg fregs.(0));
+        Printf.fprintf oc "\tfmv.s %s, %s\n" (reg a) (reg fregs.(0));
 
       (* tmp レジスタから ra を復帰 *)
       Printf.fprintf oc "\tmv ra, %s\n" (reg reg_tmp)
