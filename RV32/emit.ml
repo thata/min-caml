@@ -62,11 +62,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
   | NonTail(_), Nop -> ()
   | NonTail(x), Li(i) when -32768 <= i && i < 32768 -> Printf.fprintf oc "\tli\t%s, %d\n" (reg x) i
   | NonTail(x), Li(i) ->
-      let n = i lsr 12 in
-      let m = i lxor (n lsl 12) in
-      let r = reg x in
-      Printf.fprintf oc "\tlui %s, %d\n" r n;
-      Printf.fprintf oc "\taddi %s, %s, %d\n" r r m
+      Printf.fprintf oc "\tli %s, %d\n" (reg x) i
 | NonTail(x), FLi(Id.L(l)) ->
       Printf.fprintf oc "\tlui %s, %%hi(%s)\n" (reg reg_tmp) l;
       Printf.fprintf oc "\tflw %s, %%lo(%s)(%s)\n" (reg x) l (reg reg_tmp)
@@ -94,9 +90,9 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
   | NonTail(x), FMul(y, z) -> Printf.fprintf oc "\tfmul.s %s, %s, %s\n" (reg x) (reg y) (reg z)
   | NonTail(x), FDiv(y, z) -> Printf.fprintf oc "\tfdiv.s %s, %s, %s\n" (reg x) (reg y) (reg z)
   | NonTail(x), Lfd(y, V(z)) -> Printf.fprintf oc "\tlfdx\t%s, %s, %s\n" (reg x) (reg y) (reg z)
-  | NonTail(x), Lfd(y, C(z)) -> Printf.fprintf oc "\tlfd\t%s, %d(%s)\n" (reg x) z (reg y)
+  | NonTail(x), Lfd(y, C(z)) -> Printf.fprintf oc "\tflw %s, %d(%s)\n" (reg x) z (reg y)
   | NonTail(_), Stfd(x, y, V(z)) -> Printf.fprintf oc "\tstfdx\t%s, %s, %s\n" (reg x) (reg y) (reg z)
-  | NonTail(_), Stfd(x, y, C(z)) -> Printf.fprintf oc "\tstfd\t%s, %d(%s)\n" (reg x) z (reg y)
+  | NonTail(_), Stfd(x, y, C(z)) -> Printf.fprintf oc "\tfsw %s, %d(%s)\n" (reg x) z (reg y)
   | NonTail(_), Comment(s) -> Printf.fprintf oc "#\t%s\n" s
   (* 退避の仮想命令の実装 (caml2html: emit_save) *)
   | NonTail(_), Save(x, y) when List.mem x allregs && not (S.mem y !stackset) ->
@@ -162,8 +158,9 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
       Printf.fprintf oc "\tcmpw\tcr7@@IfEq, %s, %s\n" (reg x) (reg y);
       g'_non_tail_if oc (NonTail(z)) e1 e2 "beq" "bne"
   | NonTail(z), IfEq(x, C(y), e1, e2) ->
-      Printf.fprintf oc "\tcmpwi\tcr7@@IfEq, %s, %d\n" (reg x) y;
-      g'_non_tail_if oc (NonTail(z)) e1 e2 "beq" "bne"
+      (* 新しい if 実装済み（浮動小数点数対応） *)
+      Printf.fprintf oc "\tli %s, %d\n" (reg reg_tmp) y;
+      g'_non_tail_if_new oc (reg x) (reg reg_tmp) (NonTail(z)) e1 e2 "beq" "bne"
   | NonTail(z), IfLE(x, V(y), e1, e2) ->
       (* 新しい if 実装済み *)
       g'_non_tail_if_new oc (reg x) (reg y) (NonTail(z)) e1 e2 "ble" "bgt"
@@ -211,7 +208,7 @@ and g' oc = function (* 各命令のアセンブリ生成 (caml2html: emit_gprim
       Printf.fprintf oc "\taddi %s, %s, %d\n" (reg reg_sp) (reg reg_sp) ((-1) * ss);
       Printf.fprintf oc "\tlw %s, %d(%s)\n" (reg reg_tmp) (ss - 4) (reg reg_sp);
       if List.mem a allregs && a <> regs.(0) then
-        Printf.fprintf oc "\tmr\t%s, %s\n" (reg a) (reg regs.(0))
+        Printf.fprintf oc "\tmv %s, %s\n" (reg a) (reg regs.(0))
       else if List.mem a allfregs && a <> fregs.(0) then
         Printf.fprintf oc "\tfmr\t%s, %s\n" (reg a) (reg fregs.(0));
       (* tmp レジスタから ra を復帰 *)
