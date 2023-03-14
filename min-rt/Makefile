@@ -1,5 +1,7 @@
 # added by Sumii
 
+CC = riscv32-unknown-elf-gcc
+
 # SLDS = ball contest cup dra lattice mange mir orange piero1 piero2 planet \
 shuttle test test2 test3 tileball tron tsu tsu2 tsu3
 SLDS = ball contest
@@ -24,7 +26,7 @@ ppmdiff: ppm.ml diff.ml
 	time ./min-rt.min-caml < $< > $@.tmp
 	mv $@.tmp $@
 min-rt.min-caml: min-rt.s globals.s ../libmincaml.S ../stub.c
-	gcc -g -O2 -Wall $^ -lm -o min-rt.min-caml
+	$(CC) -g -O2 -Wall $^ -lm -o min-rt.min-caml
 min-rt.s: min-rt.ml ../min-caml
 	../min-caml -inline 100 min-rt
 
