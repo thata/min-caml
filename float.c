@@ -19,3 +19,14 @@ value getlo(value v) {
   d.d = Double_val(v);
   return caml_copy_int32(d.i[1]);
 }
+
+typedef union {
+  int32_t i[2];
+  float f;
+} flt;
+
+value getf(value v) {
+  flt f;
+  f.f = Double_val(v);
+  return caml_copy_int32(f.i[0]);
+}

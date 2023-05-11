@@ -4,17 +4,17 @@
 *.cmi
 *.o
 *.dSYM
-a.out
-asm.ml
-asm.mli
-emit.ml
-libmincaml.S
-simm.ml
-virtual.ml
-regAlloc.ml
-shootout/Makefile
-shootout/mandelbrot
-shootout/mandelbrot.s
+# a.out
+# asm.ml
+# asm.mli
+# emit.ml
+# libmincaml.S
+# simm.ml
+# virtual.ml
+# regAlloc.ml
+# shootout/Makefile
+# shootout/mandelbrot
+# shootout/mandelbrot.s
 test/toomanyargs.ml
 test/*.s
 test/*.ans

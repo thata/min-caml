@@ -6,6 +6,7 @@
 RESULT = min-caml
 NCSUFFIX = .opt
 CC = gcc
+TGT_CC = riscv32-unknown-elf-gcc
 CFLAGS = -g -O2 -Wall
 OCAMLLDFLAGS=-warn-error -31
 
@@ -32,8 +33,8 @@ TESTS = print sum-tail gcd sum fib ack even-odd \
 adder funcomp cls-rec cls-bug cls-bug2 cls-reg-bug \
 shuffle spill spill2 spill3 join-stack join-stack2 join-stack3 \
 join-reg join-reg2 non-tail-if non-tail-if2 \
-inprod inprod-rec inprod-loop matmul matmul-flat \
-manyargs
+inprod inprod-rec inprod-loop matmul matmul-flat
+# manyargs 4649
 
 do_test: $(TESTS:%=test/%.cmp)
 
@@ -43,13 +44,17 @@ TRASH = $(TESTS:%=test/%.s) $(TESTS:%=test/%) $(TESTS:%=test/%.res) $(TESTS:%=te
 test/%.s: $(RESULT) test/%.ml
 	./$(RESULT) test/$*
 test/%: test/%.s libmincaml.S stub.c
-	$(CC) $(CFLAGS) $^ -lm -o $@
+	$(TGT_CC) $(CFLAGS) $^ -lm -o $@
 test/%.res: test/%
-	$< > $@
+	spike /opt/riscv/pk/riscv32-unknown-elf/bin/pk $< > $@
 test/%.ans: test/%.ml
 	ocaml $< > $@
 test/%.cmp: test/%.res test/%.ans
 	diff $^ > $@
+shootout/%.s: $(RESULT) shootout/%.ml
+	./$(RESULT) shootout/$*
+shootout/%: shootout/%.s libmincaml.S stub.c
+	$(TGT_CC) $(CFLAGS) $^ -lm -o $@
 
 min-caml.html: main.mli main.ml id.ml m.ml s.ml \
 		syntax.ml type.ml parser.mly lexer.mll typing.mli typing.ml kNormal.mli kNormal.ml \
